@@ -1,44 +1,26 @@
-const fs = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 
-const formatBytes = (bytes, decimals = 2) => {
-  if (!+bytes) return '0 Bytes';
+const originalFilePath = path.join(__dirname, 'files');
+const copyFilePath = path.join(__dirname, 'files-copy');
 
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = [
-    'Bytes',
-    'kb',
-    'MiB',
-    'GiB',
-    'TiB',
-    'PiB',
-    'EiB',
-    'ZiB',
-    'YiB',
-  ];
+const handleFiles = (err, files) => {
+  if (err) throw err;
+  for (let file of files) {
+    if (!file.isFile()) return;
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    fs.copyFile(
+      path.join(originalFilePath, file.name),
+      path.join(copyFilePath, file.name),
+      (err) => {
+        if (err) console.log(err);
+        console.log(`file ${file.name} copied`);
+      }
+    );
+  }
 };
 
-(async () => {
-  const files = await fs.readdir(path.join(__dirname, 'secret-folder'), {
-    withFileTypes: true,
-  });
-
-  for (const object of files) {
-    if (!object.isFile()) continue;
-
-    let filePath = path.join(__dirname, 'secret-folder', object.name);
-
-    const { size } = await fs.stat(
-      path.join(__dirname, 'secret-folder', object.name)
-    );
-    const { name, ext } = path.parse(filePath);
-    const extension = ext ? ext.split('.')[1] : '';
-
-    console.log(`${name} - ${extension} - ${formatBytes(size, 3)}`);
-  }
-})();
+fs.mkdir(copyFilePath, { recursive: true }, (err) => {
+  if (err) throw err;
+  fs.readdir(originalFilePath, { withFileTypes: true }, handleFiles);
+});
