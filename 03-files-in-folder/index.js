@@ -1,28 +1,42 @@
 const path = require('path');
-const fs = require('fs');
-//const { readdir } = require('fs/promises');
-let pathSecret = path.join('03-files-in-folder', 'secret-folder');
+const fs = require('fs/promises');
 
-fs.readdir(pathSecret, { withFileTypes: true }, (err, files) => {
-  console.log('\nCurrent directory files:');
+const formatBytes = (bytes, decimals = 2) => {
+  if (!+bytes) return '0 Bytes';
 
-  if (err) {
-    console.log(err);
-  } else {
-    files.forEach((file) => {
-      let pathFile = path.join('03-files-in-folder', 'secret-folder', file.name);
-      console.log(pathFile);
-      // if (path.extname(file.name)) {
-        fs.stat(pathFile, (error, stats) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Stats object for: ");
-            console.log(stats);
-            console.log("Path is file:", stats.isFile());
-          }
-        });
-      // }
-    });
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = [
+    'Bytes',
+    'kb',
+    'MiB',
+    'GiB',
+    'TiB',
+    'PiB',
+    'EiB',
+    'ZiB',
+    'YiB',
+  ];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+};
+
+(async () => {
+  let pathSecret = path.join(__dirname, 'secret-folder');
+  const files = await fs.readdir(pathSecret, { withFileTypes: true });
+  try {
+    for (const object of files) {
+
+      if (!object.isFile()) continue;
+      let pathObj = path.join(pathSecret, object.name);
+      const { size } = await fs.stat(pathObj);
+      const { name, ext } = path.parse(pathObj);
+      const extansion = ext ? ext.split('.')[1] : '';
+      console.log(`${name} - ${extansion} - ${formatBytes(size, 3)}`);
+    }
+  } catch (error) {
+    console.log(error);
   }
-});
+})();
