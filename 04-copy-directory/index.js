@@ -1,4 +1,5 @@
 const fs = require('fs');
+//const fs = require('fs/promises');
 const path = require('path');
 
 const originalFilePath = path.join(__dirname, 'files');
@@ -19,8 +20,9 @@ const handleFiles = (err, files) => {
     );
   }
 };
-
-fs.mkdir(copyFilePath, { recursive: true }, (err) => {
-  if (err) throw err;
-  fs.readdir(originalFilePath, { withFileTypes: true }, handleFiles);
+fs.rm(copyFilePath, { recursive: true, force: true }, () => {
+  fs.mkdir(copyFilePath, { recursive: true }, (err) => {
+    if (err) throw err;
+    fs.readdir(originalFilePath, { withFileTypes: true }, handleFiles);
+  });
 });
