@@ -73,9 +73,12 @@ const copyAssetFiles = async (assetFolderArray) => {
   }
 };
 const copySingleFile = async (fileName, sourceArray = []) => {
-  const content = await getFileContent(path.join(__dirname, ...sourceArray, fileName));
+  const readStream = fs.createReadStream(path.join(__dirname, ...sourceArray, fileName));
   const writeStream = fs.createWriteStream(path.join(__dirname, "project-dist", ...sourceArray, fileName));
-  writeStream.write(content);
+
+  for await (chunk of readStream) {
+    writeStream.write(chunk);
+  }
 };
 
 (async () => {

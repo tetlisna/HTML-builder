@@ -1,4 +1,4 @@
-const fs = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
 
 const getFileContent = async (filePath) => {
@@ -13,7 +13,7 @@ const getFileContent = async (filePath) => {
 };
 
 (async () => {
-  const files = await fs.readdir(path.join(__dirname, "styles"), { withFileTypes: true });
+  const files = await fs.promises.readdir(path.join(__dirname, "styles"), { withFileTypes: true });
   const filesContentArray = [];
 
   for (let file of files) {
